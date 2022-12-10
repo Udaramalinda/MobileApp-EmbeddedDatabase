@@ -1,5 +1,6 @@
 package lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -53,9 +54,9 @@ public class PersistentAccountDAO implements AccountDAO {
         // get readable database from the handler
         SQLiteDatabase sqLiteDatabase = handler.getReadableDatabase();
 
-        String getAccountNumberQuery = "SELECT * FROM " + handler.Account_Table_Name;
+        String getAccountListQuery = "SELECT * FROM " + handler.Account_Table_Name;
         // run the query and get the data
-        Cursor outputData = sqLiteDatabase.rawQuery(getAccountNumberQuery, null);
+        Cursor outputData = sqLiteDatabase.rawQuery(getAccountListQuery, null);
 
         // get the data while the pointer come to first point
         if (outputData.moveToFirst()){
@@ -82,11 +83,47 @@ public class PersistentAccountDAO implements AccountDAO {
 
     @Override
     public Account getAccount(String accountNo) throws InvalidAccountException {
-        return null;
+
+        // get readable database from the handler
+        SQLiteDatabase sqLiteDatabase = handler.getReadableDatabase();
+
+        String getAccountQuery = "SELECT * FROM " + handler.Account_Table_Name +
+                " WHERE " + handler.Account_Number + " = " + accountNo;
+        // run the query and get the data
+        Cursor outputData = sqLiteDatabase.rawQuery(getAccountQuery, null);
+
+        // if the given account number does not exist
+        if (!outputData.moveToFirst()){
+            throw new InvalidAccountException("This Account Number is Not Valid");
+        }
+
+        String accountNumber = outputData.getString(outputData.getColumnIndex(handler.Account_Number));
+        String bankName = outputData.getString(outputData.getColumnIndex(handler.Bank_Name));
+        String accountHolderName = outputData.getString(outputData.getColumnIndex(handler.Account_Holder));
+        double balance = outputData.getDouble(outputData.getColumnIndex(handler.Balance));
+
+        // create a account
+        Account account = new Account(accountNumber, bankName, accountHolderName, balance);
+
+        return account;
     }
 
     @Override
     public void addAccount(Account account) {
+        // get writable database from the handler
+        SQLiteDatabase sqLiteDatabase = handler.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        // passing all account attributes to values object as colum and value pair
+        values.put(handler.Account_Number, account.getAccountNo());
+        values.put(handler.Bank_Name, account.getBankName());
+        values.put(handler.Account_Holder, account.getAccountHolderName());
+        values.put(handler.Balance, account.getBalance());
+
+        // add to the database
+        sqLiteDatabase.insert(handler.Account_Table_Name, null, values);
+        sqLiteDatabase.close();
 
     }
 
