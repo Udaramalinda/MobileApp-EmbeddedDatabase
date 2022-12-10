@@ -66,5 +66,6 @@ public class Transaction {
         this.accountNo = accountNo;
         this.expenseType = expenseType;
         this.amount = amount;
+
     }
 }
