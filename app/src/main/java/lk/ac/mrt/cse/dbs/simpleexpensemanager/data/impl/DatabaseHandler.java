@@ -8,8 +8,8 @@ import android.support.annotation.Nullable;
 public class DatabaseHandler extends SQLiteOpenHelper {
 
     // Constructor Parameters
-    public static final String Database_Name = "200727M.db";
-    public static final int Version = 1;
+    private static final String Database_Name = "200727M.db";
+    private static final int Version = 1;
 
     // Account Table Data
     public static final String Account_Table_Name = "account";
