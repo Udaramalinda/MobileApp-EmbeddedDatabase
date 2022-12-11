@@ -36,20 +36,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         // For create the account table
         String Create_Account_Table =
-                "CREATE TABLE " + Account_Table_Name + "(" +
-                        Account_Number + "TEXT PRIMARY KEY, " +
-                        Bank_Name + "TEXT NOT NULL, " +
-                        Account_Holder + "TEXT NOT NULL, "+
-                        Balance + "REAL NOT NULL);";
+                "CREATE TABLE " + Account_Table_Name + " ( " +
+                        Account_Number + " TEXT PRIMARY KEY, " +
+                        Bank_Name + " TEXT NOT NULL, " +
+                        Account_Holder + " TEXT NOT NULL, "+
+                        Balance + " REAL NOT NULL);";
 
         // For create transaction table
         String Create_Transaction_Table =
-                "CREATE TABLE " + Transaction_Table_Name + "(" +
-                        Transaction_ID + "INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        Transaction_Date + "TEXT NOT NULL, " +
-                        Transaction_Account + "TEXT NOT NULL, " +
-                        Transaction_Expense_Type + "TEXT NOT NULL, " +
-                        Transaction_Amount + "REAL NOT NULL, " +
+                "CREATE TABLE " + Transaction_Table_Name + " ( " +
+                        Transaction_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        Transaction_Date + " TEXT NOT NULL, " +
+                        Transaction_Account + " TEXT NOT NULL, " +
+                        Transaction_Expense_Type + " TEXT NOT NULL, " +
+                        Transaction_Amount + " REAL NOT NULL, " +
                         "FOREIGN KEY (" + Transaction_Account + ") REFERENCES " + Account_Table_Name + "(" + Account_Number + "));";
 
         sqLiteDatabase.execSQL(Create_Account_Table);
