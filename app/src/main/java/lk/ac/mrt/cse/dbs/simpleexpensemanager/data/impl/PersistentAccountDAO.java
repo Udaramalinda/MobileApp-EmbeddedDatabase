@@ -130,10 +130,57 @@ public class PersistentAccountDAO implements AccountDAO {
     @Override
     public void removeAccount(String accountNo) throws InvalidAccountException {
 
+        SQLiteDatabase sqLiteDatabase = handler.getWritableDatabase();
+
+        // get delete account and get number of rows deleted
+        int numberOfRowsDeleted = sqLiteDatabase.delete(handler.Account_Table_Name , handler.Account_Number + "=" + accountNo, null);
+        // number of deleted rows equal to 0 then such account number didn't exist
+        if ( numberOfRowsDeleted == 0){
+            throw new InvalidAccountException("Didn't Exist Such Account Number");
+        }
+
+        sqLiteDatabase.close();
+
     }
 
     @Override
     public void updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
 
+        SQLiteDatabase sqLiteDatabase = handler.getWritableDatabase();
+        String getAccountQuery = "SELECT  * FROM " +
+                handler.Account_Table_Name + " WHERE " +
+                handler.Account_Number + " = " + accountNo;
+        Cursor outputData = sqLiteDatabase.rawQuery(getAccountQuery, null);
+        if(outputData.moveToFirst()){
+
+            double balance = outputData.getDouble(outputData.getColumnIndex(handler.Balance));
+
+            if(amount<balance) {
+//
+                switch (expenseType) {
+                    case EXPENSE:
+                        balance -=amount;
+                        break;
+                    case INCOME:
+                        balance +=amount;
+                        break;
+                }
+
+                ContentValues values = new ContentValues();
+                values.put(handler.Balance, balance);
+
+                int a = sqLiteDatabase.update(handler.Account_Table_Name, values, handler.Account_Number + " = " + accountNo, null);
+            }
+        } else {
+
+            sqLiteDatabase.close();
+            outputData.close();
+            throw new InvalidAccountException("Didn't Exist Such Account Number");
+        }
+        sqLiteDatabase.close();
+        outputData.close();
     }
+
+
 }
+
