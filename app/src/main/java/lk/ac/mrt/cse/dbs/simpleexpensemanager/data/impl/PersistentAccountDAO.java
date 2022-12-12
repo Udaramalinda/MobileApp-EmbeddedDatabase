@@ -86,11 +86,12 @@ public class PersistentAccountDAO implements AccountDAO {
 
         // get readable database from the handler
         SQLiteDatabase sqLiteDatabase = handler.getReadableDatabase();
+        String[] parameters = {accountNo};
 
         String getAccountQuery = "SELECT * FROM " + handler.Account_Table_Name +
-                " WHERE " + handler.Account_Number + " = " + accountNo;
+                " WHERE " + handler.Account_Number + " =  ?";
         // run the query and get the data
-        Cursor outputData = sqLiteDatabase.rawQuery(getAccountQuery, null);
+        Cursor outputData = sqLiteDatabase.rawQuery(getAccountQuery, parameters);
 
         // if the given account number does not exist
         if (!outputData.moveToFirst()){
@@ -131,9 +132,10 @@ public class PersistentAccountDAO implements AccountDAO {
     public void removeAccount(String accountNo) throws InvalidAccountException {
 
         SQLiteDatabase sqLiteDatabase = handler.getWritableDatabase();
+        String[] parameters = {accountNo};
 
         // get delete account and get number of rows deleted
-        int numberOfRowsDeleted = sqLiteDatabase.delete(handler.Account_Table_Name , handler.Account_Number + "=" + accountNo, null);
+        int numberOfRowsDeleted = sqLiteDatabase.delete(handler.Account_Table_Name , handler.Account_Number + "= ?", parameters);
         // number of deleted rows equal to 0 then such account number didn't exist
         if ( numberOfRowsDeleted == 0){
             throw new InvalidAccountException("Didn't Exist Such Account Number");
@@ -146,39 +148,41 @@ public class PersistentAccountDAO implements AccountDAO {
     @Override
     public void updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
 
+
         SQLiteDatabase sqLiteDatabase = handler.getWritableDatabase();
-        String getAccountQuery = "SELECT  * FROM " +
+        // query for get data and and pass the parameters to it
+        String[] parameters = {accountNo};
+        String getAccountQuery = "SELECT * FROM " +
                 handler.Account_Table_Name + " WHERE " +
-                handler.Account_Number + " = " + accountNo;
-        Cursor outputData = sqLiteDatabase.rawQuery(getAccountQuery, null);
+                handler.Account_Number + " = ?";
+        Cursor outputData = sqLiteDatabase.rawQuery(getAccountQuery, parameters);
         if(outputData.moveToFirst()){
 
             double balance = outputData.getDouble(outputData.getColumnIndex(handler.Balance));
 
-            if(amount<balance) {
 //
-                switch (expenseType) {
-                    case EXPENSE:
-                        balance -=amount;
-                        break;
-                    case INCOME:
-                        balance +=amount;
-                        break;
-                }
-
-                ContentValues values = new ContentValues();
-                values.put(handler.Balance, balance);
-
-                int a = sqLiteDatabase.update(handler.Account_Table_Name, values, handler.Account_Number + " = " + accountNo, null);
+            switch (expenseType) {
+                case EXPENSE:
+                    balance -= amount;
+                    break;
+                case INCOME:
+                    balance += amount;
+                    break;
             }
+            ContentValues values = new ContentValues();
+            values.put(handler.Balance, balance);
+
+                // update the balance of the account
+                int a = sqLiteDatabase.update(handler.Account_Table_Name, values, handler.Account_Number + " = ? ", parameters);
+
         } else {
 
-            sqLiteDatabase.close();
             outputData.close();
+            sqLiteDatabase.close();
             throw new InvalidAccountException("Didn't Exist Such Account Number");
         }
-        sqLiteDatabase.close();
         outputData.close();
+        sqLiteDatabase.close();
     }
 
 

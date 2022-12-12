@@ -40,11 +40,14 @@ public class PersistentTransactionDAO implements TransactionDAO {
         SQLiteDatabase sqLiteDatabase = handler.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+
+        // put the data to container
         values.put(handler.Transaction_Date, date.toString());
         values.put(handler.Transaction_Account, accountNo);
         values.put(handler.Transaction_Expense_Type, expenseType.toString());
         values.put(handler.Transaction_Amount, amount);
 
+        // insert it into the transaction table
         sqLiteDatabase.insert(handler.Transaction_Table_Name, null, values);
         sqLiteDatabase.close();
 
@@ -56,6 +59,8 @@ public class PersistentTransactionDAO implements TransactionDAO {
         SQLiteDatabase sqLiteDatabase = handler.getReadableDatabase();
 
         List<Transaction> allTransaction = new ArrayList<>();
+
+        //query for get all the transaction data
         String allTransactionQuery = "SELECT * FROM " + handler.Transaction_Table_Name;
 
         Cursor outputData = sqLiteDatabase.rawQuery(allTransactionQuery, null);
@@ -63,23 +68,22 @@ public class PersistentTransactionDAO implements TransactionDAO {
         if (outputData.moveToFirst()){
 
             do {
-
+                // value assigning
                 String accountNumber = outputData.getString(outputData.getColumnIndex(handler.Transaction_Account));
                 String stringDate = outputData.getString(outputData.getColumnIndex(handler.Transaction_Date));
                 String stringExpenseType = outputData.getString(outputData.getColumnIndex(handler.Transaction_Expense_Type));
                 double amount = outputData.getDouble(outputData.getColumnIndex(handler.Transaction_Amount));
-
-
                 Date date = null;
 
+                // convert string date to the Date object type
                 try{
-                    date = new SimpleDateFormat("dd-MM-yyyy").parse(stringDate);
+                    date = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy").parse(stringDate);
                 }catch (ParseException e){
                     e.printStackTrace();
                 }
 
                 ExpenseType expenseType = null;
-
+                // convert string expenseType to ExpenseType object
                 if (stringExpenseType.equals("EXPENSE")){
                     expenseType = ExpenseType.valueOf("EXPENSE");
                 }
@@ -87,6 +91,7 @@ public class PersistentTransactionDAO implements TransactionDAO {
                     expenseType = ExpenseType.valueOf("INCOME");
                 }
 
+                // create transaction and add it into allTransaction Array
                 Transaction transaction = new Transaction(date, accountNumber, expenseType, amount);
                 allTransaction.add(transaction);
 
@@ -106,9 +111,11 @@ public class PersistentTransactionDAO implements TransactionDAO {
         SQLiteDatabase sqLiteDatabase = handler.getReadableDatabase();
 
         List<Transaction> allTransaction = new ArrayList<>();
-        String limitTransactionQuery = "SELECT * FROM " + handler.Transaction_Table_Name + " ORDER BY " + handler.Transaction_ID + " DESC LIMIT " + limit;
+        // query for get the transaction data between some range
+        String[] parameters = {String.valueOf(limit)};
+        String limitTransactionQuery = "SELECT * FROM " + handler.Transaction_Table_Name + " ORDER BY " + handler.Transaction_ID + " DESC LIMIT ?";
 
-        Cursor outputData = sqLiteDatabase.rawQuery(limitTransactionQuery, null);
+        Cursor outputData = sqLiteDatabase.rawQuery(limitTransactionQuery, parameters);
 
         if (outputData.moveToFirst()){
 
@@ -123,9 +130,9 @@ public class PersistentTransactionDAO implements TransactionDAO {
                 Date date = null;
 
                 try{
-                    date = new SimpleDateFormat("dd-MM-yyyy").parse(stringDate);
-                }catch (ParseException e){
-                    e.printStackTrace();
+                    date = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy").parse(stringDate);
+
+                }catch (ParseException e) {
                 }
 
                 ExpenseType expenseType = null;
